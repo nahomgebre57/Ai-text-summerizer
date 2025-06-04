@@ -59,15 +59,19 @@ const generateSummary = async () => {
 
   try {
     const prompt = `summarize this text: ${userText}`;
-
     const start = Date.now();
+
     const result = await chatSession.sendMessage(prompt);
     const duration = (Date.now() - start) / 1000;
     console.log(`Summary API call took ${duration} seconds`);
 
-    const summaryText = await result?.response?.text();
-    console.log("Summary:", summaryText);
+    const summaryText = result.response.candidates?.[0]?.content?.parts?.[0]?.text;
 
+    if (!summaryText) {
+      throw new Error("No summary was returned from the model.");
+    }
+
+    console.log("Summary:", summaryText);
     await saveSummary(summaryText);
   } catch (error) {
     console.error("Error generating summary:", error);
@@ -76,6 +80,7 @@ const generateSummary = async () => {
     setIsLoading(false);
   }
 };
+
 
 
   const saveSummary = async (summary: string) => {
